@@ -4,13 +4,41 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-// value returned by tokens
+// value
 
 interface SmallValue{
     int evaluate();
 }
 
-// tokens type
+class SmallUndefinedValue implements SmallValue{
+    public SmallUndefinedValue(){}
+
+    public int evaluate(){
+        return -1;
+    }
+
+    public String toString() {
+        return "UNDEFINED";
+    }
+}
+
+class SmallNumberValue implements SmallValue{
+    private int number;
+
+    public SmallNumberValue(int number){
+        this.number = number;
+    }
+
+    public int evaluate(){
+        return this.number;
+    }
+
+    public String toString() {
+        return "NUMBER " + this.number;
+    }
+}
+
+// tokens
 
 enum SmallTokenType{
     NUMBER,
@@ -20,14 +48,12 @@ enum SmallTokenType{
     BC
 }
 
-// tokens
-
 class SmallTokenValue implements TokenValue<SmallTokenType, SmallValue>{
     private SmallTokenType type;
     private SmallValue value;
 
     public SmallTokenValue(SmallTokenType type){
-        this(type, null);
+        this(type, new SmallUndefinedValue());
     }
 
     public SmallTokenValue(SmallTokenType type, SmallValue value){
@@ -45,22 +71,6 @@ class SmallTokenValue implements TokenValue<SmallTokenType, SmallValue>{
 }
 
 // values
-
-class SmallNumberValue implements SmallValue{
-    private int number;
-
-    public SmallNumberValue(int number){
-        this.number = number;
-    }
-
-    public int evaluate(){
-        return this.number;
-    }
-
-    public String toString() {
-        return "NUMBER " + this.number;
-    }
-}
 
 // rules using tokens
 
@@ -144,33 +154,26 @@ public class TestSmall{
         System.out.println(factor);
 
         // sentence
-//        SmallTokenValue[] rawPhrase = new SmallTokenValue[]{
-//                new SmallTokenValue(SmallTokenType.NUMBER, new SmallNumberValue(1)),
-//                new SmallTokenValue(SmallTokenType.MUL),
-//                new SmallTokenValue(SmallTokenType.BO),
-//                new SmallTokenValue(SmallTokenType.NUMBER, new SmallNumberValue(2)),
-//                new SmallTokenValue(SmallTokenType.ADD),
-//                new SmallTokenValue(SmallTokenType.NUMBER, new SmallNumberValue(3)),
-//                new SmallTokenValue(SmallTokenType.BC),
-//                new SmallTokenValue(SmallTokenType.MUL),
-//                new SmallTokenValue(SmallTokenType.NUMBER, new SmallNumberValue(4)),
-//
-//        };
         SmallTokenValue[] rawPhrase = new SmallTokenValue[]{
                 new SmallTokenValue(SmallTokenType.BO),
                 new SmallTokenValue(SmallTokenType.NUMBER, new SmallNumberValue(1)),
                 new SmallTokenValue(SmallTokenType.ADD),
                 new SmallTokenValue(SmallTokenType.NUMBER, new SmallNumberValue(2)),
                 new SmallTokenValue(SmallTokenType.BC),
-
+                new SmallTokenValue(SmallTokenType.MUL),
+                new SmallTokenValue(SmallTokenType.BO),
+                new SmallTokenValue(SmallTokenType.NUMBER, new SmallNumberValue(3)),
+                new SmallTokenValue(SmallTokenType.ADD),
+                new SmallTokenValue(SmallTokenType.NUMBER, new SmallNumberValue(4)),
+                new SmallTokenValue(SmallTokenType.BC),
         };
         List<TokenValue<SmallTokenType, SmallValue>> phrase = new ArrayList<>(Arrays.asList(rawPhrase));
 
         // go
 
-        System.out.println(expression.match(phrase));
+        Grammar<SmallTokenType, SmallValue> grammar = new Grammar<>(expression);
 
-        SmallValue out = expression.parse(phrase);
+        SmallValue out = grammar.parse(phrase);
         System.out.println(out);
         if(out != null){
             System.out.println(out.evaluate());
